@@ -36,13 +36,6 @@ def generate_docx(dictIn):
                 if not previousPara:
                     paragraph = documentReal.add_paragraph('')
                 paragraph.add_run(key).italic = True
-            elif value == 'boldnitalic':
-                if not previousPara:
-                    paragraph = documentReal.add_paragraph('')
-                runi += 1
-                prun[runi] = paragraph.add_run(key)
-                prun[runi].bold = True
-                prun[runi].italic = True
             elif value == 'bulletpoint':
                 paragraph = documentReal.add_paragraph('')
                 prun = paragraph.add_run('* ' + key)
