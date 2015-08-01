@@ -12,7 +12,6 @@ def generate_docx(dictIn):
     # Try and build the document from a dict
     try:
         previousPara = False
-        runi = 0
         for key, value in docStruct.items():
             if value == 'paragraph':
                 if not previousPara:
