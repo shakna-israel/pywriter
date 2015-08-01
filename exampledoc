@@ -1,0 +1,3 @@
+import write_lib
+testdict = {'document': {'sometext':'paragraph','sometitle':'title','titlesss':'subtitle','tagline':'tagline','somebold':'bold','someitalic':'italic','bothboldnitalic':'boldnitalic','bulletpoint':'bulletpoint','imagefile.png':'image',},'outFile': 'exampledoc.docx'}
+write_lib.generate_docx(testdict)
