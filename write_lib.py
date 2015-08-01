@@ -40,12 +40,12 @@ def generate_docx(dictIn):
                 if not previousPara:
                     paragraph = documentReal.add_paragraph('')
                 runi += 1
-                run[runi] = paragraph.add_run(key)
-                run[runi].bold = True
-                run[runi].italic = True
+                prun[runi] = paragraph.add_run(key)
+                prun[runi].bold = True
+                prun[runi].italic = True
             elif value == 'bulletpoint':
                 paragraph = documentReal.add_paragraph('')
-                run = paragraph.add_run('* ' + key)
+                prun = paragraph.add_run('* ' + key)
             elif value == 'image':
                 document.add_picture(key, width=Inches(1.0))
 
