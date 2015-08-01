@@ -39,7 +39,7 @@ def generate_docx(dictIn):
                 paragraph = documentReal.add_paragraph('')
                 prun = paragraph.add_run('* ' + key)
             elif value == 'image':
-                document.add_picture(key, width=Inches(1.0))
+                documentReal.add_picture(key, width=Inches(1.0))
 
     # If not a dict, process it as a list
     except AttributeError:
