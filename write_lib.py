@@ -108,9 +108,8 @@ def generate_docx(dictIn):
         # Or save into the current working directory.
         folder = os.getcwd()
         if '\\' in folder:
-            documentReal.save(folder + '\\save.docx')
-        else:
-            documentReal.save(folder + '/save.docx')
+            folder = folder.replace('\\', '/')
+        documentReal.save(folder + '/save.docx')
 
 def generate_markdown(dictIn):
     """Takes either a list for unformatted text, or a dict with formatting options"""
