@@ -1,5 +1,61 @@
-from docx import Document
-from docx.shared import Inches
+try:
+    from docx import Document
+except ImportError:
+    print("DOCX conversion Unavailable")
+try:
+    from docx.shared import Inches
+except ImportError:
+    print("DOCX Conversion Unavailable")
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("HTML Conversion Unavailable")
+try:
+    import markdown
+except ImportError:
+    print("HTML Conversion Unavailable")
+    print("Markdown Conversion Unavailable")
+import re
+import collections
+
+def strip_html(stringIn):
+    stringIn = str(stringIn)
+    stripped_item = re.sub('<[^<]+?>', '', stringIn)
+    return stripped_item
+
+def html_to_json(htmlString,outFile=None):
+    """Convert HTML to pywriter's JSON syntax"""
+    htmlString = markdown.markdown(htmlString)
+    htmlString = BeautifulSoup(htmlString, 'html.parser')
+    finalDict = {}
+    finalDict['document'] = collections.OrderedDict()
+    for item in htmlString:
+        stringItem = str(item)
+        if '<h1' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'title'
+        if '<h2' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'subtitle'
+        if '<h3' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'tagline'
+        if '<b' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'bold'
+        if '<strong' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'bold'
+        if '<i' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'italic'
+        if '<em' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'italic'
+        if '<li' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'bulletpoint'
+    return finalDict
 
 def generate_docx(dictIn):
     """Takes either a list for unformatted text, or a dict with formatting options"""
@@ -55,3 +111,10 @@ def generate_docx(dictIn):
             documentReal.save(folder + '\\save.docx')
         else:
             documentReal.save(folder + '/save.docx')
+
+def generate_markdown(dictIn):
+    """Takes either a list for unformatted text, or a dict with formatting options"""
+    try:
+        docStruct = dictIn['document']
+    except AttributeError:
+        docStruct = list(dictIn)
