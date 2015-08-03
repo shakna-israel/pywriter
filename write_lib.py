@@ -19,6 +19,9 @@ import re
 import collections
 import os
 
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+
 def strip_html(stringIn):
     stringIn = str(stringIn)
     stripped_item = re.sub('<[^<]+?>', '', stringIn)
@@ -125,3 +128,25 @@ def generate_markdown(dictIn):
         docStruct = dictIn['document']
     except AttributeError:
         docStruct = list(dictIn)
+
+def generate_pdf(dictIn):
+    """Takes either a list for unformatted text, or a dict with formatting options"""
+    try:
+        docStruct = dictIn['document']
+    except TypeError:
+        docStruct = list(dictIn)
+
+    try:
+         for key, value in docStruct.items():
+             print("Unimplemented")
+    except AttributeError:
+        folder = os.getcwd()
+        if '\\' in folder:
+            folder = folder.replace('\\','/')
+        outFile = folder + '/save.pdf'
+        c = canvas.Canvas(outFile)
+        c.translate(cm, -cm)
+        for item in docStruct:
+            c.drawString(0.3*cm, cm, item)
+            c.showPage()
+        c.save()
