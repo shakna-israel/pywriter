@@ -17,6 +17,7 @@ except ImportError:
     print("Markdown Conversion Unavailable")
 import re
 import collections
+import os
 
 def strip_html(stringIn):
     stringIn = str(stringIn)
@@ -55,6 +56,13 @@ def html_to_json(htmlString,outFile=None):
         if '<li' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'bulletpoint'
+        if outFile:
+            finalDict['outFile'] = outFile
+        else:
+            folder = os.getcwd()
+            if '\\' in folder:
+                folder = folder.replace('\\','/')
+            finalDict['outFile'] = folder + '/save.docx'
     return finalDict
 
 def generate_docx(dictIn):
