@@ -1,11 +1,8 @@
 try:
     from docx import Document
-except ImportError:
-    print("DOCX conversion Unavailable")
-try:
     from docx.shared import Inches
 except ImportError:
-    print("DOCX Conversion Unavailable")
+    print("DOCX conversion Unavailable")
 try:
     from bs4 import BeautifulSoup
 except ImportError:
@@ -18,9 +15,14 @@ except ImportError:
 import re
 import collections
 import os
-
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import cm
+try:
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import cm
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, tableofcontents
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+except ImportError:
+    print("PDF Generation Unavailable")
 
 def strip_html(stringIn):
     stringIn = str(stringIn)
@@ -38,27 +40,30 @@ def html_to_json(htmlString,outFile=None):
         if '<h1' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'title'
-        if '<h2' in stringItem:
+        elif '<h2' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'subtitle'
-        if '<h3' in stringItem:
+        elif '<h3' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'tagline'
-        if '<b' in stringItem:
+        elif '<b' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'bold'
-        if '<strong' in stringItem:
+        elif '<strong' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'bold'
-        if '<i' in stringItem:
+        elif '<i' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'italic'
-        if '<em' in stringItem:
+        elif '<em' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'italic'
-        if '<li' in stringItem:
+        elif '<li' in stringItem:
             stripped_item = strip_html(item)
             finalDict['document'][stripped_item] = 'bulletpoint'
+        elif '<p' in stringItem:
+            stripped_item = strip_html(item)
+            finalDict['document'][stripped_item] = 'paragraph'
         if outFile:
             finalDict['outFile'] = outFile
         else:
@@ -107,6 +112,10 @@ def generate_docx(dictIn):
                 prun = paragraph.add_run('* ' + key)
             elif value == 'image':
                 documentReal.add_picture(key, width=Inches(1.0))
+            elif value == 'paragraph':
+                if not previousPara:
+                    documentReal.add_paragraph('')
+                paragraph.add_run(key)
 
     # If not a dict, process it as a list
     except AttributeError:
@@ -129,6 +138,11 @@ def generate_markdown(dictIn):
     except AttributeError:
         docStruct = list(dictIn)
 
+def addPageNumber(canvas, doc):
+    page_num = canvas.getPageNumber()
+    text = "Page %s" % page_num
+    canvas.drawRightString(2*cm, 0.2*cm, text)
+
 def generate_pdf(dictIn):
     """Takes either a list for unformatted text, or a dict with formatting options"""
     try:
@@ -137,16 +151,30 @@ def generate_pdf(dictIn):
         docStruct = list(dictIn)
 
     try:
-         for key, value in docStruct.items():
-             print("Unimplemented")
-    except AttributeError:
+        outFile = dictIn['outFile']
+    except TypeError:
         folder = os.getcwd()
         if '\\' in folder:
             folder = folder.replace('\\','/')
         outFile = folder + '/save.pdf'
-        c = canvas.Canvas(outFile)
-        c.translate(cm, -cm)
+
+    doc = SimpleDocTemplate(outFile,pagesize=A4,rightMargin=72,leftMargin=72,topMargin=72,bottomMargin=18)
+    styles=getSampleStyleSheet()
+    documentReal = []
+    try:
+        for key, value in docStruct.items():
+           if value == 'title':
+               documentReal.append(Paragraph('<font size=21>%s</font>' % key, styles["Title"]))
+           elif value == 'subtitle':
+               documentReal.append(Paragraph('<font size=18>%s</font>' % key, styles["Heading1"]))
+           elif value == 'tagline':
+               documentReal.append(Paragraph('<font size=16>%s</font>' % key, styles["Heading2"]))
+           elif value == 'bold':
+               documentReal.append(Paragraph('<font size=16><b>%s</b></font>' % key, styles["Normal"]))
+           documentReal.append(Spacer(1, 12))
+        doc.build(documentReal, onFirstPage=addPageNumber, onLaterPages=addPageNumber)
+    except AttributeError:
         for item in docStruct:
-            c.drawString(0.3*cm, cm, item)
-            c.showPage()
-        c.save()
+            documentReal.append(Paragraph('<font size=12>%s</font>' % item, styles["Normal"]))
+            documentReal.append(Spacer(1, 12))
+        doc.build(documentReal, onFirstPage=addPageNumber, onLaterPages=addPageNumber)
